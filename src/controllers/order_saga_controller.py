@@ -37,9 +37,12 @@ class OrderSagaController(Controller):
             elif self.current_saga_state == OrderSagaState.DECREASING_STOCK:
                 self.increase_stock_handler = DecreaseStockHandler(order_data["items"])
                 self.current_saga_state = self.increase_stock_handler.run()
+            elif self.current_saga_state == OrderSagaState.CREATING_PAYMENT:
+                self.create_payment_handler = CreatePaymentHandler(self.create_order_handler.order_id, order_data)
+                self.current_saga_state = self.create_payment_handler.run()
             else:
                 self.is_error_occurred = True
-                self.logger.debug(f"L'état saga n'est pas valide : {self.current_saga_state}")
+                self.logger.debug(f"L'état saga n'est pas valide : {self.current_saga_state} {order_data['items']}")
                 self.current_saga_state = OrderSagaState.COMPLETED
 
         return {
